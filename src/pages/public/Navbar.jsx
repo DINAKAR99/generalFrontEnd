@@ -1,16 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { doLogout } from "../../utility/AuthorizationUtils";
+import { Link, useLocation } from "react-router-dom";
 import privateAxios from "../../service/Interceptor";
-import { Button, IconButton, LinearProgress, Tooltip } from "@mui/material";
+import { doLogout } from "../../utility/AuthorizationUtils";
+import { NavLink as Starlink, useNavigate } from "react-router-dom";
 
-const Navbar = () => {
-  const navigate = useNavigate(); // Get the navigate function
+import {
+  Navbar,
+  NavbarBrand,
+  Nav,
+  NavItem,
+  NavLink,
+  Collapse,
+  NavbarToggler,
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  UncontrolledDropdown,
+} from "reactstrap";
+
+const Navbarr = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleNavbar = () => setIsOpen(!isOpen);
+  const navigate = useNavigate();
+
   const logoutt = async () => {
     try {
       const response = await privateAxios.get("/logoff");
       if (response.status === 200) {
-        console.log("Logut successful:", response.data);
+        console.log("Logout successful:", response.data);
         setIsLoggedIn(false);
         doLogout();
         navigate("/");
@@ -24,15 +43,16 @@ const Navbar = () => {
     try {
       const response = await privateAxios.get(`/test`);
       if (response.status === 200) {
-        console.log("jwt successful:", response.data);
+        console.log("JWT successful:", response.data);
       }
     } catch (error) {
       console.log(error.message);
     }
   };
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
-    if (sessionStorage.getItem("isLoggedIn") == "true") {
+    if (sessionStorage.getItem("isLoggedIn") === "true") {
       setIsLoggedIn(true);
     }
   }, []);
@@ -50,9 +70,8 @@ const Navbar = () => {
     <>
       {loading2 ? "" : ""}
       <nav
-        className="navbar navbar-expand-lg navbar-light"
+        className="navbar navbar-expand-lg navbar-light px-1 "
         style={{
-          maxHeight: 45,
           backgroundColor: "white",
           boxShadow: "0 4px 40px rgba(0, 0, 0, 0.4)",
         }}
@@ -90,17 +109,29 @@ const Navbar = () => {
                   aria-labelledby="servicesDropdown"
                 >
                   <li>
-                    <Link className="dropdown-item" to="/service1">
+                    <Link
+                      className="dropdown-item "
+                      style={{ backgroundColor: "transparent" }}
+                      to="/service1"
+                    >
                       Service 1
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/service2">
+                    <Link
+                      className="dropdown-item"
+                      style={{ backgroundColor: "transparent" }}
+                      to="/service2"
+                    >
                       Service 2
                     </Link>
                   </li>
                   <li>
-                    <Link className="dropdown-item" to="/service3">
+                    <Link
+                      className="dropdown-item"
+                      style={{ backgroundColor: "transparent" }}
+                      to="/service3"
+                    >
                       Service 3
                     </Link>
                   </li>
@@ -112,11 +143,6 @@ const Navbar = () => {
                 </Link>
               </li>
 
-              <li className="nav-item">
-                <Link className="nav-link" to="/signup">
-                  Signup
-                </Link>
-              </li>
               {isLoggedIn ? (
                 <li className="nav-item">
                   <a className="nav-link" to="#" onClick={logoutt}>
@@ -124,11 +150,18 @@ const Navbar = () => {
                   </a>
                 </li>
               ) : (
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login">
-                    Login
-                  </Link>
-                </li>
+                <>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/signup">
+                      Signup
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link className="nav-link" to="/login">
+                      Login
+                    </Link>
+                  </li>
+                </>
               )}
               <li className="nav-item">
                 <a className="nav-link" to="#" onClick={jwtTest}>
@@ -143,4 +176,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default Navbarr;

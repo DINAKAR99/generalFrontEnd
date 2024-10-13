@@ -1,25 +1,23 @@
 import React from "react";
-import Navbar from "../pages/public/Navbar";
 import { Link } from "react-router-dom";
+import Navbar from "../pages/public/Navbar";
+import Navbarr from "../pages/public/Navbar";
 
 const PublicLayout = ({ children }) => {
   return (
     <div>
-      <header className="fixed-top  ">
-        <Navbar />
+      <header className="fixed-top ">
+        <Navbarr />
       </header>
-      <main style={{ minHeight: 450, marginTop: 65, backgroundColor: "white" }}>
-        {children}
-      </main>
+      <main style={{ minHeight: "100vh", marginTop: 75 }}>{children}</main>
       <footer
-        className="footer     py-3"
+        className="footer py-3"
         style={{
-          backgroundColor: "white",
           boxShadow: "0 -2px 40px rgba(0, 0, 0, 0.4)",
         }}
       >
         <div className="container text-center">
-          <span className="text-muted">© 2024 demo. All Rights Reserved.</span>
+          <span className="text-muted">© 2024 MyApp. All Rights Reserved.</span>
           <div className="mt-2">
             <Link className="text-muted mx-2" to="/about">
               About

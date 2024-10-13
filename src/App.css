@@ -1,9 +1,23 @@
+ 
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 body {
   font-family: 'Roboto', sans-serif;
   background-color: white;
 }
 
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+/* styles.css */
 
 .App {
   display: flex;
@@ -18,27 +32,32 @@ body {
   left: 30px;
 }
 .nav-link:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
+  color: green;
+  
+ }
 .nav-link {
   border-radius: 5px;
-  padding-left: 10px;
+  padding-left: 10px !important;
+  
+}
+.nav-link:active {
+  color: green !important;
+
 }
 /* Navbar.css */
-.dropdown-menu {
-  margin-top: 7px;
-  display: none; /* Initially hide the dropdown */
-  opacity: 0; /* Make it invisible */
-  transition: opacity 0.2s ease; /* Smooth transition */
-  position: absolute; /* Position it absolutely */
+ .nav-link:hover{
+  color: green !important;
+ }
+ 
+.dropdown-item:hover{
+  color: green !important;
 }
+ a{
 
-.nav-item.dropdown:hover .dropdown-menu {
-  margin-top: 1px;
-  display: block; /* Show dropdown on hover */
-  opacity: 1; /* Make it visible */
-  transition: opacity 0.2s ease; /* Ensure transition effect */
-}
+  text-decoration: none !important;;
+ }
+/* = */
+
 
 table {
   background-color: #2980b9 !important;
@@ -256,7 +275,8 @@ html {
     red
   );
   background-size: 400% 400%;
-   -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   animation: colorChange 13s infinite;
 }
 
@@ -303,6 +323,7 @@ th {
 }
 
 
+
 /* moon  */
 @keyframes moveStar {
   0% {
@@ -319,5 +340,19 @@ th {
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+/* Add fade-in animation */
+.fade-in {
+  animation: fadeIn 2s ease-in-out;
+}
+
+/* Define the keyframes for the fade-in effect */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

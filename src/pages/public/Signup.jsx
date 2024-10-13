@@ -1,48 +1,80 @@
-import React, { useEffect, useRef, useState } from "react";
-import PublicLayout from "../../Layouts/PublicLayout";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Button, LinearProgress } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import PublicLayout from "../../Layouts/PublicLayout";
+import { publicAxios } from "../../service/Interceptor";
+import React from "react";
 
 const Signup = () => {
   const [captcha, setCaptcha] = useState(generateCaptcha());
   const [message, setMessage] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  // Use useEffect to trigger the animation after the component mounts
+
   const canvasRef = useRef(null);
   const navigate = useNavigate(); // Get the navigate function
   // Define the validation schema
-  const schema = z.object({
-    user: z
-      .string()
-      .min(1, { message: "Username Required" })
-      .refine((name) => name.toLowerCase() !== "justin", {
-        message: "Name cannot be 'Justin'",
-      }),
-    password: z
-      .string()
-      .min(1, { message: "Password Required" })
-      .max(8, { message: "password length cant be more than 8 " }),
+  // Define the validation schema using Yup
+  const phoneRegExp = /^[6789]\d{9}$/;
 
-    passwordcheck: z
+  const schema = yup.object().shape({
+    user: yup
       .string()
-      .min(1, { message: "Required" })
-      .max(8, { message: "password length cant be more than 8 " }),
-    email: z.string().min(1, { message: "Email Required" }),
-    captcha: z
-      .string()
-      .min(1, { message: "Captcha Required" })
-      .refine(
-        (captchaa) => {
-          if (captchaa === captcha) {
-            return true;
-          } else {
+      .required("Username Required")
+      .test(
+        "not-justin",
+        "Name cannot be 'Justin'",
+        (value) => value?.toLowerCase() !== "justin"
+      )
+      .test("check-username", "Username already taken", async (value) => {
+        if (!value) return true; // Skip validation if no value is entered
+        try {
+          const response = await publicAxios.get(
+            `/public/auth/checkuser/${value}`
+          );
+          if (response.status == 200) {
             return false;
           }
-        },
-        {
-          message: "incorrect captcha",
+          // User exists
+        } catch (error) {
+          console.log(error.response.data);
+          return true;
         }
+      }),
+    password: yup
+      .string()
+      .required("Password Required")
+      .min(6, "Password length must be greater than or equal 6 characters")
+      .max(8, "Password length can't be more than 8 characters"),
+    passwordcheck: yup
+      .string()
+      .required("Required")
+      .oneOf([yup.ref("password")], "Passwords must match")
+      .min(6, "Password length must be greater than or equal 6 characters")
+      .max(8, "Password length can't be more than 8 characters"),
+    email: yup
+      .string()
+      .required("Email Required")
+      .email("Invalid email format"),
+    phonenumber: yup
+      .string()
+      .required("Phone Number Required")
+      .matches(
+        phoneRegExp,
+        "Phone number is not valid (must be 10 digits and start with 9, 8, 7, or 6)"
+      ),
+
+    captcha: yup
+      .string()
+      .required("Captcha Required")
+      .test(
+        "match-captcha",
+        "Incorrect captcha",
+        (captchaa) => captchaa === captcha
       ),
   });
 
@@ -50,8 +82,7 @@ const Signup = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) });
-
+  } = useForm({ resolver: yupResolver(schema) });
   function generateCaptcha() {
     const chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -127,19 +158,57 @@ const Signup = () => {
     }
   };
 
-  // Utility functions for random values
   const getRandomInt = (min, max) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
   useEffect(() => {
     drawCaptcha();
   }, [captcha]);
-  const onSubmit = () => {};
+  const onSubmit = async (data) => {
+    // Remove the passwordcheck field from the data object
+    const { passwordcheck, ...dataToSubmit } = data;
+
+    console.log(dataToSubmit); // Log the data before submission
+
+    setSubmitted(true); // Set form submission state
+    try {
+      const response = await publicAxios.post(
+        "/public/auth/signup",
+        dataToSubmit,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setSubmitted(false);
+        toast.success("Signup successful");
+        setTimeout(() => {
+          navigate("/sucessfullSignup");
+        }, 1000);
+      }
+    } catch (error) {
+      setSubmitted(false);
+
+      if (error.response) {
+        toast.error("Unexpected error occurred");
+        setMessage("Unexpected error occurred.");
+      } else {
+        toast.error("Network or server error");
+
+        console.error("Network or server error:", error.message);
+      }
+    }
+  };
   const handleReloadCaptcha = () => {
     setCaptcha(generateCaptcha());
   };
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     // Find all elements with the class 'isvalid' and remove the class
     const elements = document.querySelectorAll(".is-valid");
     elements.forEach((element) => {
@@ -148,146 +217,178 @@ const Signup = () => {
   }, []); // Empty dependency array ensures this runs only once after the initial render
   return (
     <PublicLayout>
-      <div
-        className="mb-5"
-        style={{
-          backgroundColor: "#f8f9fa",
-          marginTop: "15px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <>
         <div
+          className="mb-5"
           style={{
-            width: "450px",
-            margin: "auto",
-            padding: "2rem",
-            backgroundColor: "white",
-            borderRadius: "8px",
-            boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
+            backgroundColor: "#f8f9fa",
+            marginTop: "15px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <h2 className="text-center">Sign Up</h2>
-          {message && (
-            <div className="message-box text-center text-danger     ">
-              {message}
-            </div>
-          )}
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="mb-3">
-              <label htmlFor="user" className="form-label">
-                Username
-              </label>
-              <input
-                type="text"
-                className={`form-control ${
-                  errors.user ? "is-invalid" : "is-valid"
-                }`}
-                id="user"
-                {...register("user")}
-              />
-              {errors.user && (
-                <p className="text-danger">{errors.user.message}</p>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="password" className="form-label">
-                Password
-              </label>
-              <input
-                type="password"
-                className={`form-control ${
-                  errors.password ? "is-invalid" : "is-valid"
-                }`}
-                id="password"
-                {...register("password")}
-              />
-              {errors.password && (
-                <p className="text-danger">{errors.password.message}</p>
-              )}
-            </div>
-
-            <div className="mb-3">
-              <label htmlFor="passwordcheck" className="form-label">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                className={`form-control ${
-                  errors.passwordcheck ? "is-invalid" : "is-valid"
-                }`}
-                id="passwordcheck"
-                {...register("passwordcheck")}
-              />
-              {errors.password && (
-                <p className="text-danger">{errors.passwordcheck.message}</p>
-              )}
-            </div>
-            <div className="mb-3">
-              <label htmlFor="email" className="form-label">
-                Email
-              </label>
-              <input
-                type="email"
-                className={`form-control ${
-                  errors.email ? "is-invalid" : "is-valid"
-                }`}
-                id="email"
-                {...register("email")}
-              />
-              {errors.password && (
-                <p className="text-danger">{errors.email.message}</p>
-              )}
-            </div>
-
-            <div className="mb-3 d-flex">
-              <canvas
-                ref={canvasRef}
-                height={50}
-                className="w-75"
-                style={{
-                  border: "1px solid #ccc",
-                  backgroundColor: "darkgray",
-                  borderRadius: 5,
+          <div
+            style={{
+              width: "450px",
+              margin: "auto",
+              padding: "2rem",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 0 20px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {submitted ? (
+              <LinearProgress
+                className="mb-3"
+                sx={{
+                  "& .MuiLinearProgress-bar": {
+                    // Progress bar color
+                    animationDuration: "3s", // Control speed by adjusting duration
+                  },
                 }}
               />
-              <button
-                type="button"
-                className="border    btn "
-                style={{
-                  backgroundColor: "transparent",
-                  border: "1px solid #ccc !important",
-                }}
-                onClick={handleReloadCaptcha}
-              >
-                <i className="fas fa-sync text-dark fa-xl"></i>
-              </button>
-            </div>
-            <div className="mb-3">
-              <div className="d-flex align-items-center mt-3">
+            ) : (
+              ""
+            )}
+            <h2 className="text-center">Sign Up</h2>
+            {message && (
+              <div className="message-box text-center text-danger     ">
+                {message}
+              </div>
+            )}
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <div className="mb-3">
+                <label htmlFor="user" className="form-label">
+                  Username
+                </label>
                 <input
                   type="text"
                   className={`form-control ${
-                    errors.captcha ? "is-invalid" : "is-valid"
+                    errors.user ? "is-invalid" : "is-valid"
                   }`}
-                  id="captcha"
-                  {...register("captcha")}
+                  id="user"
+                  {...register("user")}
                 />
+                {errors.user && (
+                  <p className="text-danger">{errors.user.message}</p>
+                )}
               </div>
-              {errors.captcha && (
-                <p className="text-danger">{errors.captcha.message}</p>
-              )}
+              <div className="mb-3">
+                <label htmlFor="password" className="form-label">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  className={`form-control ${
+                    errors.password ? "is-invalid" : "is-valid"
+                  }`}
+                  id="password"
+                  {...register("password")}
+                />
+                {errors.password && (
+                  <p className="text-danger">{errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="passwordcheck" className="form-label">
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  className={`form-control ${
+                    errors.passwordcheck ? "is-invalid" : "is-valid"
+                  }`}
+                  id="passwordcheck"
+                  {...register("passwordcheck")}
+                />
+                {errors.passwordcheck && (
+                  <p className="text-danger">{errors.passwordcheck.message}</p>
+                )}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  className={`form-control ${
+                    errors.email ? "is-invalid" : "is-valid"
+                  }`}
+                  id="email"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="text-danger">{errors.email.message}</p>
+                )}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="phonenumber" className="form-label">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  maxLength={10}
+                  className={`form-control ${
+                    errors.phonenumber ? "is-invalid" : "is-valid"
+                  }`}
+                  id="phonenumber"
+                  {...register("phonenumber")}
+                />
+                {errors.phonenumber && (
+                  <p className="text-danger">{errors.phonenumber.message}</p>
+                )}
+              </div>
+
+              <div className="mb-3 d-flex">
+                <canvas
+                  ref={canvasRef}
+                  height={50}
+                  className="w-75"
+                  style={{
+                    border: "1px solid #ccc",
+                    backgroundColor: "darkgray",
+                    borderRadius: 5,
+                  }}
+                />
+                <button
+                  type="button"
+                  className="border ms-2 btn "
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "1px solid #ccc !important",
+                  }}
+                  onClick={handleReloadCaptcha}
+                >
+                  <i className="fas fa-sync text-dark fa-xl"></i>
+                </button>
+              </div>
+              <div className="mb-3">
+                <div className="d-flex align-items-center mt-3">
+                  <input
+                    type="text"
+                    className={`form-control ${
+                      errors.captcha ? "is-invalid" : "is-valid"
+                    }`}
+                    id="captcha"
+                    {...register("captcha")}
+                  />
+                </div>
+                {errors.captcha && (
+                  <p className="text-danger">{errors.captcha.message}</p>
+                )}
+              </div>
+              <Button type="submit" variant="contained" className=" w-100 mt-3">
+                SignUp
+              </Button>
+            </form>
+            <div className="text-center mt-3">
+              <Link to="/login">Already have an account? Login</Link>
             </div>
-            <button type="submit" className="btn btn-primary w-100 mt-3">
-              Login
-            </button>
-          </form>
-          <div className="text-center mt-3">
-            <Link to="/login">Already have an account? Login</Link>
           </div>
         </div>
-      </div>
+      </>
     </PublicLayout>
   );
 };

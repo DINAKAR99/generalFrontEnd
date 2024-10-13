@@ -90,13 +90,24 @@ const Err = () => {
 
         {/* 404 Message */}
         <div style={styles.messageContainer} className="mt-4">
+          <lord-icon
+            src="https://cdn.lordicon.com/fttvwdlw.json"
+            trigger="loop"
+            stroke="bold"
+            state="loop-roll"
+            colors="primary:#FFFFFf,secondary:#FFA500"
+            style={{ width: 50, height: 50 }}
+          ></lord-icon>
           <h1 style={styles.header}>404 - Page Not Found</h1>
           <p style={styles.subHeader}>Looks like you're lost in space!</p>
           <p style={styles.suggestion}>
-            Go back to
-            <Link className="navbar-brand text-info ms-1 " to="/">
+            Go back to &nbsp;
+            <a
+              href="/"
+              style={{ backgroundColor: "transparent ", color: "orange" }}
+            >
               Home
-            </Link>
+            </a>
           </p>
         </div>
       </div>
@@ -107,7 +118,7 @@ const Err = () => {
 const styles = {
   container: {
     position: "relative",
-    height: "79vh",
+    height: "100vh",
     backgroundColor: "#0a0a0a", // Dark background for space
     overflow: "hidden",
     display: "flex",

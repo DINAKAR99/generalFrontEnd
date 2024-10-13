@@ -1,13 +1,14 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { Button, LinearProgress } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import PublicLayout from "../../Layouts/PublicLayout";
-import { doLogin } from "../../utility/AuthorizationUtils";
-import { Button, LinearProgress, TextField } from "@mui/material";
 import { publicAxios } from "../../service/Interceptor";
-import toast from "react-hot-toast";
+import { doLogin } from "../../utility/AuthorizationUtils";
 
 const checkUserExists = async (name) => {
   try {
@@ -30,55 +31,49 @@ const Login = () => {
   const canvasRef = useRef(null);
   const navigate = useNavigate(); // Get the navigate function
   // Define the validation schema
-  const schema = z.object({
-    user: z
+
+  const schema = yup.object().shape({
+    user: yup
       .string()
-      .min(1, { message: "Required" })
-      .refine((name) => name.toLowerCase() !== "justin", {
-        message: "Name cannot be 'Justin'",
-      })
-      .refine(
-        async (name) => {
-          try {
-            const response = await publicAxios.get(`/public/api/${name}`);
-            if (!response.status == 200) {
-              console.log("false" + response.status);
-              return false;
-            }
-            return true; // User exists
-          } catch (error) {
-            // Log the error for debugging purposes (optional)
-            console.log(error.response.data);
-            return false; // Consider this as a failed validation
-          }
-        },
-        {
-          message: "User not found", // Error message if user does not exist
-        }
-      ),
-    password: z.string().min(1, { message: "Required" }),
-    captcha: z
-      .string()
-      .min(1, { message: "Required" })
-      .refine(
-        (captchaa) => {
-          if (captchaa === captcha) {
-            return true;
-          } else {
+      .required("Username Required")
+      .test(
+        "not-justin",
+        "Name cannot be 'Justin'",
+        (value) => value?.toLowerCase() !== "justin"
+      )
+      .test("check-username", "User not found", async (value) => {
+        if (!value) return true; // Skip validation if no value is entered
+        try {
+          const response = await publicAxios.get(
+            `/public/auth/checkuser/${value}`
+          );
+          if (!response.status == 200) {
+            console.log("false" + response.status);
             return false;
           }
-        },
-        {
-          message: "incorrect captcha",
+          return true; // User exists
+        } catch (error) {
+          console.log(error.response.data);
+          return false; // Consider this as a failed validation
         }
+      }),
+    password: yup.string().required("Password Required"),
+    // .min(6, "Password length must be greater than or equal 6 characters")
+    // .max(8, "Password length can't be more than 8 characters"),
+    captcha: yup
+      .string()
+      .required("Captcha Required")
+      .test(
+        "match-captcha",
+        "Incorrect captcha",
+        (captchaa) => captchaa === captcha
       ),
   });
-
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(schema) });
+  } = useForm({ resolver: yupResolver(schema) });
 
   function generateCaptcha() {
     const chars =
@@ -162,7 +157,10 @@ const Login = () => {
   useEffect(() => {
     drawCaptcha();
   }, [captcha]);
+
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     // Find all elements with the class 'isvalid' and remove the class
     const elements = document.querySelectorAll(".is-valid");
     elements.forEach((element) => {
@@ -174,6 +172,8 @@ const Login = () => {
   };
 
   const onSubmit = async (data) => {
+    console.log(data);
+
     setSubmitted(true); // Set form submission state
     try {
       const response = await publicAxios.post("/public/auth/login", data, {
@@ -195,6 +195,12 @@ const Login = () => {
         if (error.response.status === 401) {
           console.error("Incorrect login attempt:", error.response.data);
           setMessage(error.response.data.message);
+          // Handle incorrect login, show a message to the user
+        }
+        if (error.response.status === 400) {
+          console.error("DUAL login attempt:", error.response.data);
+          setMessage("Dual login attempt failed");
+          navigate("/dualogin");
           // Handle incorrect login, show a message to the user
         } else if (error.response.status === 423) {
           console.error("Account locked:", error.response.data.message);
@@ -238,6 +244,17 @@ const Login = () => {
         ) : (
           ""
         )}
+        <div className="text-center  ">
+          <lord-icon
+            src="https://cdn.lordicon.com/kdduutaw.json"
+            trigger="loop"
+            delay="2000"
+            stroke="midium"
+            state="hover-looking-around"
+            colors="primary:#242424,secondary:#545454"
+            style={{ height: 50, width: 50 }}
+          ></lord-icon>
+        </div>
         <h2 className="text-center mt-2 ">Login</h2>
         {message && (
           <div className="message-box text-center text-danger     ">

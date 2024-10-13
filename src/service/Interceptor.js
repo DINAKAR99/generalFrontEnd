@@ -1,7 +1,7 @@
-import { getJwtToken } from "../utility/AuthorizationUtils";
 import axios from "axios";
+import { getJwtToken } from "../utility/AuthorizationUtils";
 
-export const API_BASE_URL = import.meta.env.REACT_APP_API_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
 console.log(API_BASE_URL);
 
 export const publicAxios = axios.create({
@@ -12,10 +12,10 @@ export const privateAxios = axios.create({
   baseURL: API_BASE_URL,
 });
 export const publicBasePath = () => {
-  return process.env.PUBLIC_URL;
+  return import.meta.env.PUBLIC_URL;
 };
 export const apiBasePath = () => {
-  return process.env.REACT_APP_API_URL;
+  return import.meta.env.VITE_API_URL;
 };
 // interceptor
 privateAxios.interceptors.request.use(
