@@ -198,8 +198,12 @@ const Login = () => {
           // Handle incorrect login, show a message to the user
         }
         if (error.response.status === 400) {
-          console.error("DUAL login attempt:", error.response.data);
+          console.error("DUAL login attempt:", error.response.data.name);
           setMessage("Dual login attempt failed");
+          sessionStorage.setItem(
+            "dual_login_username",
+            error.response.data.name
+          );
           navigate("/dualogin");
           // Handle incorrect login, show a message to the user
         } else if (error.response.status === 423) {

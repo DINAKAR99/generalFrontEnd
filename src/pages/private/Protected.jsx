@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 const Protected = () => {
   useEffect(() => {
-    toast.success("Successfully toasted!");
+    toast.success("Successfully Loggedin !");
   }, []);
   return (
     <PublicLayout>
