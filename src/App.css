@@ -1,11 +1,8 @@
- 
-
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   background-color: white;
 }
-
 
 @keyframes slide-up {
   0% {
@@ -33,34 +30,29 @@ body {
 }
 .nav-link:hover {
   color: green;
-  
- }
+}
 .nav-link {
   border-radius: 5px;
   padding-left: 10px !important;
-  
 }
 .nav-link:active {
   color: green !important;
-
 }
 /* Navbar.css */
- .nav-link:hover{
-  color: green !important;
- }
- 
-.dropdown-item:hover{
+.nav-link:hover {
   color: green !important;
 }
- a{
 
-  text-decoration: none !important;;
- }
+.dropdown-item:hover {
+  color: green !important;
+}
+a {
+  text-decoration: none !important;
+}
 /* = */
 
-
 table {
-  background-color: #2980b9 !important;
+  background-color: #b5d7ed !important;
 }
 
 .box {
@@ -321,8 +313,6 @@ th {
 th {
   padding: 10px;
 }
-
-
 
 /* moon  */
 @keyframes moveStar {

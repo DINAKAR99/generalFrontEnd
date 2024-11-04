@@ -9,6 +9,7 @@ import * as z from "zod";
 import PublicLayout from "../../Layouts/PublicLayout";
 import { publicAxios } from "../../service/Interceptor";
 import { doLogin } from "../../utility/AuthorizationUtils";
+import Log from "./Log";
 
 const checkUserExists = async (name) => {
   try {
@@ -186,7 +187,12 @@ const Login = () => {
         setSubmitted(false);
         console.log("Login successful:", response.data.jwttoken);
         doLogin(response);
-        navigate("/protected"); // Handle successful login, e.g., redirect or store token
+        console.log(response.data.role);
+
+        if (response.data.role === 1) {
+          navigate("/devdashboard");
+        }
+        // navigate("/protected"); // Handle successful login, e.g., redirect or store token
       }
     } catch (error) {
       setSubmitted(false);

@@ -17,6 +17,8 @@ import SucessfullSignup from "./pages/public/SucessfullSignup";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Includes Popper.js
 import TableWithManualExport from "./Layouts/TableWithManualExport";
+import Log from "./pages/public/Log";
+import DeveloperBoard from "./pages/public/dashboards/DeveloperBoard";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -46,6 +48,9 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
+            <Route path="/log" element={<Log />} />
+            <Route path="/devdashboard" element={<DeveloperBoard />} />
+
             <Route
               path="/protected"
               element={<ProtectedRoute element={<Protected />} />}

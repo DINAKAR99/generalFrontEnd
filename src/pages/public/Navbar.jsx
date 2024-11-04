@@ -4,21 +4,6 @@ import privateAxios from "../../service/Interceptor";
 import { doLogout } from "../../utility/AuthorizationUtils";
 import { NavLink as Starlink, useNavigate } from "react-router-dom";
 
-import {
-  Navbar,
-  NavbarBrand,
-  Nav,
-  NavItem,
-  NavLink,
-  Collapse,
-  NavbarToggler,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-} from "reactstrap";
-
 const Navbarr = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -27,7 +12,15 @@ const Navbarr = () => {
 
   const logoutt = async () => {
     try {
-      const response = await privateAxios.get("/logoff");
+      const response = await privateAxios.post(
+        "/logoff",
+        { username: sessionStorage.getItem("username") },
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        }
+      );
       if (response.status === 200) {
         console.log("Logout successful:", response.data);
         setIsLoggedIn(false);
