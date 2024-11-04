@@ -1,6 +1,7 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
-body {
-  font-family: "Roboto", sans-serif;
+ 
+@import url('https://fonts.googleapis.com/css2?family=Yantramanav:wght@100;300;400;500;700;900&display=swap');
+ body {
+  font-family: "Yantramanav", sans-serif;
   background-color: white;
 }
 
@@ -346,3 +347,111 @@ th {
     opacity: 1;
   }
 }
+
+/* DeveloperBoard.css */
+
+.developer-board {
+  max-width: 800px;
+  margin: 20px auto; /* Add margin for top and bottom */
+  padding: 30px; /* Increased padding for a spacious layout */
+  background-color: #f8f9fa; /* Light background */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px; /* Add margin below the heading */
+}
+
+.text-center {
+  margin-bottom: 20px;
+}
+
+.text-center label {
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+select,
+input[type="text"],
+input[type="date"] {
+  width: calc(100% - 20px); /* Full width minus padding */
+  padding: 12px; /* Increased padding for inputs */
+  margin: 10px 0; /* More margin for spacing between fields */
+  border: 1px solid #ced4da; /* Border color */
+  border-radius: 4px; /* Rounded corners */
+}
+
+input[type="text"][readOnly] {
+  background-color: #e9ecef; /* Gray background for readonly fields */
+}
+
+ /* DeveloperBoard.css */
+
+/* Existing styles... */
+
+/* Add styles for the table */
+table {
+  width: 100%; /* Make the table full width */
+  border-collapse: collapse; /* Collapse borders into a single border */
+  margin-top: 20px; /* Space above the table */
+  border: 1px solid #0000001e; /* Border for table cells */
+}
+
+th, td {
+  border: 1px solid #010101; /* Border for table cells */
+  padding: 10px; /* Padding for table cells */
+  text-align: left; /* Align text to the left */
+}
+
+th {
+  background-color: #f8f9fa; /* Light gray background for header */
+  font-weight: bold; /* Bold text for headers */
+}
+
+tr:nth-child(even) {
+  background-color: #fff0d7c4; /* Zebra striping for even rows */
+}
+
+ 
+
+/* Other existing styles... */
+
+
+button {
+  padding: 8px 12px; /* Increased padding for buttons */
+  background-color: #007bff; /* Bootstrap primary color */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+ 
+ 
+
+ 
+
+table td:last-child button {
+  margin-left: 5px; /* Space between action buttons */
+}
+/* DeveloperBoard.css */
+
+/* Existing styles... */
+
+ 
+
+ 
+
+select {
+  width: 150px; /* Set a fixed width for dropdowns */
+  padding: 10px; /* Slightly reduce padding */
+  margin: 10px 0; /* More margin for spacing */
+  border: 1px solid #ced4da; /* Border color */
+  border-radius: 4px; /* Rounded corners */
+}
+
+/* Other existing styles... */

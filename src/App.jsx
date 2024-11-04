@@ -19,6 +19,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js"; // Includes Popper.js
 import TableWithManualExport from "./Layouts/TableWithManualExport";
 import Log from "./pages/public/Log";
 import DeveloperBoard from "./pages/public/dashboards/DeveloperBoard";
+import DevDashboard from "./pages/public/dashboards/DevDashboard";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/log" element={<Log />} />
             <Route path="/devdashboard" element={<DeveloperBoard />} />
+            <Route path="/devdashboard2" element={<DevDashboard />} />
 
             <Route
               path="/protected"

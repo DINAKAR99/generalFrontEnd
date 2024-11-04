@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PublicLayout from "../../../Layouts/PublicLayout";
+import { publicAxios } from "../../../service/Interceptor";
 
 const DeveloperBoard = () => {
   const [projectCode, setProjectCode] = useState("");
@@ -10,6 +11,7 @@ const DeveloperBoard = () => {
       fromDate: "",
       toDate: "",
       subtaskId: "", // Default to empty subtask ID
+      description: "", // Added description field
     },
   ]);
 
@@ -28,6 +30,7 @@ const DeveloperBoard = () => {
         fromDate: "",
         toDate: "",
         subtaskId: "", // Default to empty for new row
+        description: "", // Added description for new row
       },
     ]);
   };
@@ -40,23 +43,24 @@ const DeveloperBoard = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const finalTasks = tasks.map((task) => ({
-      ...task,
       projectCode,
       memberId,
+      ...task, // Spread the individual task details (taskId, fromDate, toDate, subtaskId, description)
     }));
 
     // Send data to the backend
-    fetch("/api/tasks", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        projectCode,
-        memberId,
-        tasks: finalTasks,
-      }),
-    })
+    publicAxios
+      .post(
+        "/public/api/tasks",
+        {
+          tasks: finalTasks, // Corrected to match TaskRequest structure
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
       .then((response) => {
         if (response.ok) {
           return response.json();
@@ -68,7 +72,15 @@ const DeveloperBoard = () => {
         // Reset form after submission
         setProjectCode("");
         setMemberId("");
-        setTasks([{ taskId: "", fromDate: "", toDate: "", subtaskId: "" }]);
+        setTasks([
+          {
+            taskId: "",
+            fromDate: "",
+            toDate: "",
+            subtaskId: "",
+            description: "",
+          },
+        ]);
       })
       .catch((error) => {
         console.error("Error:", error);
@@ -92,9 +104,7 @@ const DeveloperBoard = () => {
   return (
     <div>
       <PublicLayout>
-        {/* <h2>Assign Tasks to Team Members</h2> */}
-
-        <div className="text-center ">
+        <div className="text-center">
           <label>Project Name:</label>
           <select
             value={projectCode}
@@ -134,6 +144,7 @@ const DeveloperBoard = () => {
                 <th>To Date</th>
                 <th>Assigned To</th>
                 <th>Subtask ID</th>
+                <th>Description</th> {/* New header for Description */}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -206,6 +217,16 @@ const DeveloperBoard = () => {
                     </select>
                   </td>
                   <td>
+                    <input
+                      type="text"
+                      name="description"
+                      value={task.description}
+                      onChange={(e) => handleTaskChange(index, e)}
+                      required
+                      placeholder="Task Description" // Placeholder for description input
+                    />
+                  </td>
+                  <td>
                     <button type="button" onClick={() => removeTaskRow(index)}>
                       -
                     </button>
@@ -216,7 +237,7 @@ const DeveloperBoard = () => {
                 </tr>
               ))}
               <tr>
-                <td colSpan="7">
+                <td colSpan="8">
                   <button type="submit">Submit All Tasks</button>
                 </td>
               </tr>
