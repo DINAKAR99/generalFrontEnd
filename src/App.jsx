@@ -20,6 +20,7 @@ import TableWithManualExport from "./Layouts/TableWithManualExport";
 import Log from "./pages/public/Log";
 import DeveloperBoard from "./pages/public/dashboards/DeveloperBoard";
 import DevDashboard from "./pages/public/dashboards/DevDashboard";
+import EmployeeTaskBoard from "./pages/public/dashboards/EmployeeTaskBoard";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -49,9 +50,16 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
-            <Route path="/log" element={<Log />} />
-            <Route path="/devdashboard" element={<DeveloperBoard />} />
-            <Route path="/devdashboard2" element={<DevDashboard />} />
+            {/* <Route path="/log" element={<Log />} /> */}
+            <Route
+              path="/admindashboard"
+              element={<ProtectedRoute element={<DeveloperBoard />} />}
+            />
+            <Route
+              path="/developerdashboard"
+              element={<ProtectedRoute element={<DevDashboard />} />}
+            />
+            <Route path="/addtask" element={<EmployeeTaskBoard />} />
 
             <Route
               path="/protected"

@@ -412,7 +412,7 @@ th {
 }
 
 tr:nth-child(even) {
-  background-color: #fff0d7c4; /* Zebra striping for even rows */
+  background-color: #ffffffe8; /* Zebra striping for even rows */
 }
 
  

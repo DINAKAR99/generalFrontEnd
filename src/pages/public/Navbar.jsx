@@ -105,27 +105,27 @@ const Navbarr = () => {
                     <Link
                       className="dropdown-item "
                       style={{ backgroundColor: "transparent" }}
-                      to="/service1"
+                      to="/developerdashboard"
                     >
-                      Service 1
+                      Assigned Tasks
                     </Link>
                   </li>
                   <li>
                     <Link
                       className="dropdown-item"
                       style={{ backgroundColor: "transparent" }}
-                      to="/service2"
+                      to="/admindashboard"
                     >
-                      Service 2
+                      Task Assigner
                     </Link>
                   </li>
                   <li>
                     <Link
                       className="dropdown-item"
                       style={{ backgroundColor: "transparent" }}
-                      to="/service3"
+                      to="/addtask"
                     >
-                      Service 3
+                      Add Task
                     </Link>
                   </li>
                 </ul>

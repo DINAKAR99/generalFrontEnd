@@ -23,6 +23,7 @@ const DevDashboard = () => {
     setRangeTasks([]);
 
     try {
+      //also send userid
       const response = await publicAxios.post("/public/api/tasks/range", {
         fromDate,
         toDate,
@@ -35,6 +36,7 @@ const DevDashboard = () => {
 
   const fetchTodayTasks = async () => {
     try {
+      //send user id
       const response = await publicAxios.post("/public/api/tasks/today", {});
       setTasks(response.data);
     } catch (error) {

@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PublicLayout from "../../../Layouts/PublicLayout";
 import { publicAxios } from "../../../service/Interceptor";
 
-const DeveloperBoard = () => {
-  const [teamId, setTeamId] = useState("");
-  const [projectCode, setProjectCode] = useState("");
+const EmployeeTaskBoard = ({ userId, teamId }) => {
   const [memberId, setMemberId] = useState("");
+  useEffect(() => {
+    setMemberId(sessionStorage.getItem("userid"));
+  }, []);
   const [tasks, setTasks] = useState([
     {
+      projectCode: "",
       taskId: "",
       fromDate: "",
       toDate: "",
@@ -15,36 +17,6 @@ const DeveloperBoard = () => {
       description: "",
     },
   ]);
-
-  // Data arrays updated to group projects and members by team
-  const teams = [
-    { id: "T001", name: "Team Alpha" },
-    { id: "T002", name: "Team Beta" },
-  ];
-
-  const projects = {
-    T001: [
-      { code: "P001", name: "Project Alpha" },
-      { code: "P002", name: "Project Beta" },
-    ],
-    T002: [
-      { code: "P003", name: "Project Gamma" },
-      { code: "P004", name: "Project Delta" },
-    ],
-  };
-
-  const members = {
-    T001: [
-      { id: "M001", name: "Alice" },
-      { id: "M002", name: "Bob" },
-    ],
-    T002: [
-      { id: "M003", name: "Charlie" },
-      { id: "M004", name: "Diana" },
-    ],
-  };
-
-  const subtaskOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const handleTaskChange = (index, e) => {
     const { name, value } = e.target;
@@ -57,6 +29,7 @@ const DeveloperBoard = () => {
     setTasks([
       ...tasks,
       {
+        projectCode: "",
         taskId: "",
         fromDate: "",
         toDate: "",
@@ -73,18 +46,20 @@ const DeveloperBoard = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (memberId === null || memberId === undefined) {
+      console.error("User not logged in.");
+      alert("no");
+      return false; // Return early if user is not logged in. This prevents the API call from being made.
+    }
     const finalTasks = tasks.map((task) => ({
-      projectCode,
+      ...task, // Spread individual task details
       memberId,
-      ...task,
     }));
 
     publicAxios
       .post(
         "/public/api/tasks",
-        {
-          tasks: finalTasks,
-        },
+        { tasks: finalTasks },
         {
           headers: {
             "Content-Type": "application/json",
@@ -92,11 +67,17 @@ const DeveloperBoard = () => {
         }
       )
       .then((response) => {
-        console.log("Success:", response.data);
-        setProjectCode("");
-        setMemberId("");
+        console.log(response);
+        if (response.status == 200) {
+          console.log(response.data);
+        }
+        // throw new Error("Network response was not ok");
+      })
+      .then((data) => {
+        console.log("Tasks submitted:", data);
         setTasks([
           {
+            projectCode: "",
             taskId: "",
             fromDate: "",
             toDate: "",
@@ -106,80 +87,29 @@ const DeveloperBoard = () => {
         ]);
       })
       .catch((error) => {
-        console.error("Error:", error);
+        console.error("Submission error:", error);
       });
   };
 
-  // Event handler for team selection
-  const handleTeamChange = (e) => {
-    const selectedTeamId = e.target.value;
-    setTeamId(selectedTeamId);
-    setProjectCode(""); // Reset project and member on team change
-    setMemberId("");
-  };
+  const projects = [
+    { code: "P001", name: "Project Alpha" },
+    { code: "P002", name: "Project Beta" },
+    { code: "P003", name: "Project Gamma" },
+  ];
+
+  const subtaskOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   return (
     <div>
       <PublicLayout>
-        <div className="text-center">
-          <label>Team:</label>
-          <select
-            value={teamId}
-            onChange={handleTeamChange}
-            className="me-3"
-            required
-          >
-            <option value="">--Select Team--</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
-          </select>
-
-          <label>Project:</label>
-          <select
-            value={projectCode}
-            onChange={(e) => setProjectCode(e.target.value)}
-            className="me-3"
-            required
-            disabled={!teamId}
-          >
-            <option value="">--Select Project--</option>
-            {teamId &&
-              projects[teamId]?.map((project) => (
-                <option key={project.code} value={project.code}>
-                  {project.name}
-                </option>
-              ))}
-          </select>
-
-          <label>Assign to Member:</label>
-          <select
-            value={memberId}
-            onChange={(e) => setMemberId(e.target.value)}
-            required
-            disabled={!teamId}
-          >
-            <option value="">--Select Member--</option>
-            {teamId &&
-              members[teamId]?.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-          </select>
-        </div>
-
         <form onSubmit={handleSubmit}>
           <table>
             <thead>
               <tr>
-                <th>Project Code</th>
+                <th>Project</th>
                 <th>Task ID</th>
                 <th>From Date</th>
                 <th>To Date</th>
-                <th>Assigned To</th>
                 <th>Subtask ID</th>
                 <th>Description</th>
                 <th>Actions</th>
@@ -189,16 +119,20 @@ const DeveloperBoard = () => {
               {tasks.map((task, index) => (
                 <tr key={index}>
                   <td>
-                    <input
-                      type="text"
-                      value={projectCode}
-                      readOnly
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        backgroundColor: "#f0f0f0",
-                      }}
-                    />
+                    <select
+                      name="projectCode"
+                      value={task.projectCode}
+                      onChange={(e) => handleTaskChange(index, e)}
+                      required
+                      className="form-control"
+                    >
+                      <option value="">Select Project</option>
+                      {projects.map((project) => (
+                        <option key={project.code} value={project.code}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                   <td>
                     <input
@@ -212,8 +146,8 @@ const DeveloperBoard = () => {
                   </td>
                   <td>
                     <input
-                      className="form-control"
                       type="date"
+                      className="form-control"
                       name="fromDate"
                       value={task.fromDate}
                       onChange={(e) => handleTaskChange(index, e)}
@@ -222,25 +156,12 @@ const DeveloperBoard = () => {
                   </td>
                   <td>
                     <input
-                      className="form-control"
                       type="date"
+                      className="form-control"
                       name="toDate"
                       value={task.toDate}
                       onChange={(e) => handleTaskChange(index, e)}
                       required
-                    />
-                  </td>
-                  <td>
-                    <input
-                      className="form-control"
-                      type="text"
-                      value={memberId}
-                      readOnly
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        backgroundColor: "#f0f0f0",
-                      }}
                     />
                   </td>
                   <td>
@@ -280,7 +201,7 @@ const DeveloperBoard = () => {
                 </tr>
               ))}
               <tr>
-                <td colSpan="8">
+                <td colSpan="7">
                   <button type="submit">Submit All Tasks</button>
                 </td>
               </tr>
@@ -292,4 +213,4 @@ const DeveloperBoard = () => {
   );
 };
 
-export default DeveloperBoard;
+export default EmployeeTaskBoard;
