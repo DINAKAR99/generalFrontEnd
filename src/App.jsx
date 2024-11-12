@@ -21,6 +21,7 @@ import Log from "./pages/public/Log";
 import DeveloperBoard from "./pages/public/dashboards/DeveloperBoard";
 import DevDashboard from "./pages/public/dashboards/DevDashboard";
 import EmployeeTaskBoard from "./pages/public/dashboards/EmployeeTaskBoard";
+import TaskDashboard from "./pages/public/dashboards/TaskDashboard";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -52,7 +53,7 @@ function App() {
             <Route path="/about" element={<About />} />
             {/* <Route path="/log" element={<Log />} /> */}
             <Route path="/admindashboard" element={<DeveloperBoard />} />
-            <Route path="/developerdashboard" element={<DevDashboard />} />
+            <Route path="/developerdashboard" element={<TaskDashboard />} />
             <Route path="/addtask" element={<EmployeeTaskBoard />} />
 
             <Route
