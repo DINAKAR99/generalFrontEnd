@@ -128,6 +128,15 @@ const Navbarr = () => {
                       Add Task
                     </Link>
                   </li>
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      style={{ backgroundColor: "transparent" }}
+                      to="/report"
+                    >
+                      Complete Tasks port
+                    </Link>
+                  </li>
                 </ul>
               </li>
               <li className="nav-item">

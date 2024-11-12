@@ -43,10 +43,10 @@ const DeveloperBoard = () => {
   };
 
   const modules = {
-    BLR: [{ id: "NA", name: "NA" }],
-    LBR: [{ id: "NA", name: "NA" }],
-    FCT: [{ id: "NA", name: "NA" }],
-    ROW: [{ id: "NA", name: "NA" }],
+    BLR: [{ id: "BLR", name: "BLR" }],
+    LBR: [{ id: "LBR", name: "LBR" }],
+    FCT: [{ id: "FCT", name: "FCT" }],
+    ROW: [{ id: "ROW", name: "ROW" }],
     RC: [
       { id: "M1", name: "Module D1" },
       { id: "M2", name: "Module D2" },
@@ -55,10 +55,10 @@ const DeveloperBoard = () => {
 
   const subtaskOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
-  const categories = ["Bug", "Feature", "Enhancement"];
+  const categories = ["CR", "MR", "TM", "PI"];
   const priorities = ["Low", "Medium", "High"];
-  const complexities = ["Low", "Medium", "High"];
-  const statuses = ["Pending", "In Progress", "Closed"];
+  const complexities = ["1", "2", "3", "4", "5", "6", "7", "8"];
+  const statuses = ["Hold", "InProgress", "Closed"];
 
   useEffect(() => {
     if (projectCode) {
@@ -71,7 +71,17 @@ const DeveloperBoard = () => {
           const parsedCount = Number(count);
 
           if (!isNaN(parsedCount)) {
-            setTaskCount(parsedCount); // Only set taskCount if it's a valid number
+            setTaskCount(parsedCount + 1); // Set the task count
+
+            // Now update the taskId of the first row
+            setTasks((prevTasks) => {
+              if (prevTasks.length > 0) {
+                const updatedTasks = [...prevTasks];
+                updatedTasks[0].taskId = `${parsedCount + 1}`; // Set taskId for the first row
+                return updatedTasks;
+              }
+              return prevTasks; // In case no tasks exist yet
+            });
           } else {
             console.error("Invalid task count received:", count);
           }
@@ -84,9 +94,10 @@ const DeveloperBoard = () => {
 
   useEffect(() => {
     if (tasks.length === 0) {
-      setTasks([
+      setTasks((prevTasks) => [
+        ...prevTasks,
         {
-          taskId: `T${taskCount + 1}`, // Initialize with the correct task ID
+          taskId: `${taskCount + 1}`, // Initialize with the correct task ID
           fromDate: "",
           toDate: "",
           subtaskId: "",
@@ -100,7 +111,7 @@ const DeveloperBoard = () => {
         },
       ]);
     }
-  }, [taskCount, tasks]);
+  }, [taskCount]);
 
   const handleTaskChange = (index, e) => {
     const { name, value } = e.target;
@@ -110,30 +121,31 @@ const DeveloperBoard = () => {
   };
 
   const addTaskRow = () => {
-    if (isNaN(taskCount)) {
-      console.error("taskCount is not a valid number");
-    } else {
-      const taskId = `T${taskCount + 1}`;
-      console.log(taskId);
-    }
+    console.log(tasks);
 
-    setTaskCount(taskCount + 1);
-    setTasks([
-      ...tasks,
-      {
-        taskId: `T${taskCount + 1}`, // Auto-generate taskId dynamically
-        fromDate: "",
-        toDate: "",
-        subtaskId: "",
-        subtaskDesc: "",
-        description: "",
-        plannedHours: "",
-        category: "",
-        priority: "",
-        complexity: "",
-        status: "",
-      },
-    ]);
+    setTaskCount((prevCount) => {
+      const newCount = prevCount + 1; // Calculate new task count
+
+      // Add a new task row with the updated taskCount
+      setTasks((prevTasks) => [
+        ...prevTasks,
+        {
+          taskId: `T${newCount}`, // Generate taskId with the new count
+          fromDate: "",
+          toDate: "",
+          subtaskId: "",
+          subtaskDesc: "",
+          description: "",
+          plannedHours: "",
+          category: "",
+          priority: "",
+          complexity: "",
+          status: "",
+        },
+      ]);
+
+      return newCount; // Return the new task count for future updates
+    });
   };
 
   const removeTaskRow = (index) => {
@@ -267,19 +279,19 @@ const DeveloperBoard = () => {
                 <tr>
                   <th>Project Code</th>
                   <th>Module Code</th>
+                  <th>Assigned To</th>
                   <th>Task ID</th>
+                  <th>Description</th>
+                  <th>Subtask ID</th>
+                  <th>Subtask Description</th>
+                  <th>From Date</th>
+                  <th>To Date</th>
                   <th>Planned Hours</th>
+                  <th>Status</th>
                   <th>Category</th>
                   <th>Priority</th>
                   <th>Complexity</th>
-                  <th>From Date</th>
-                  <th>To Date</th>
-                  <th>Assigned To</th>
-                  <th>Subtask ID</th>
-                  <th>Subtask Description</th>
-                  <th>Status</th>
-                  <th>Description</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -311,6 +323,19 @@ const DeveloperBoard = () => {
                     </td>
                     <td>
                       <input
+                        className="form-control"
+                        type="text"
+                        value={memberId}
+                        readOnly
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          backgroundColor: "#f0f0f0",
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
                         type="text"
                         className="form-control"
                         name="taskId"
@@ -324,60 +349,54 @@ const DeveloperBoard = () => {
                       />
                     </td>
                     <td>
-                      <input
-                        type="text"
+                      <textarea
                         className="form-control"
-                        name="plannedHours"
-                        value={task.plannedHours}
+                        name="description"
+                        value={task.description}
                         onChange={(e) => handleTaskChange(index, e)}
-                        placeholder="e.g. 1 hour, 2 hours, 30 mins"
                         required
+                        placeholder="Task Description"
+                        rows="3"
+                        style={{ resize: "vertical" }}
                       />
                     </td>
                     <td>
                       <select
-                        className="form-control"
-                        name="category"
-                        value={task.category}
+                        className="form-select"
+                        name="subtaskId"
+                        value={task.subtaskId}
                         onChange={(e) => handleTaskChange(index, e)}
                       >
-                        <option value="">Select Category</option>
-                        {categories.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
+                        <option value="0">--</option>
+                        {subtaskOptions.map((count) => (
+                          <option key={count} value={count}>
+                            {count}
                           </option>
                         ))}
                       </select>
                     </td>
                     <td>
-                      <select
-                        className="form-control"
-                        name="priority"
-                        value={task.priority}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      >
-                        <option value="">Select Priority</option>
-                        {priorities.map((priority) => (
-                          <option key={priority} value={priority}>
-                            {priority}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className="form-control"
-                        name="complexity"
-                        value={task.complexity}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      >
-                        <option value="">Select Complexity</option>
-                        {complexities.map((complexity) => (
-                          <option key={complexity} value={complexity}>
-                            {complexity}
-                          </option>
-                        ))}
-                      </select>
+                      {task.subtaskId && task.subtaskId !== "0" ? (
+                        <input
+                          type="text"
+                          className="form-control"
+                          required
+                          name="subtaskDesc"
+                          value={task.subtaskDesc}
+                          onChange={(e) => handleTaskChange(index, e)}
+                          placeholder="Enter subtask description"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control"
+                          name="subtaskDesc"
+                          value="NA"
+                          onChange={(e) => handleTaskChange(index, e)}
+                          placeholder=" "
+                        />
+                      )}
                     </td>
                     <td>
                       <input
@@ -401,63 +420,24 @@ const DeveloperBoard = () => {
                     </td>
                     <td>
                       <input
-                        className="form-control"
                         type="text"
-                        value={memberId}
-                        readOnly
-                        style={{
-                          width: "100%",
-                          border: "none",
-                          backgroundColor: "#f0f0f0",
-                        }}
+                        className="form-control"
+                        name="plannedHours"
+                        value={task.plannedHours}
+                        onChange={(e) => handleTaskChange(index, e)}
+                        placeholder=""
+                        required
                       />
                     </td>
                     <td>
                       <select
-                        className="form-control"
-                        name="subtaskId"
-                        value={task.subtaskId}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      >
-                        <option value="">Select Subtask ID</option>
-                        {subtaskOptions.map((count) => (
-                          <option key={count} value={count}>
-                            {count}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      {task.subtaskId && task.subtaskId !== "" ? (
-                        <input
-                          type="text"
-                          className="form-control"
-                          required
-                          name="subtaskDesc"
-                          value={task.subtaskDesc}
-                          onChange={(e) => handleTaskChange(index, e)}
-                          placeholder="Enter subtask description"
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          readOnly
-                          className="form-control"
-                          name="subtaskDesc"
-                          value={task.subtaskDesc}
-                          onChange={(e) => handleTaskChange(index, e)}
-                          placeholder=" "
-                        />
-                      )}
-                    </td>
-                    <td>
-                      <select
-                        className="form-control"
+                        className="form-select"
                         name="status"
+                        required
                         value={task.status}
                         onChange={(e) => handleTaskChange(index, e)}
                       >
-                        <option value="">Select Status</option>
+                        <option value="">--</option>
                         {statuses.map((status) => (
                           <option key={status} value={status}>
                             {status}
@@ -466,18 +446,54 @@ const DeveloperBoard = () => {
                       </select>
                     </td>
                     <td>
-                      <textarea
-                        className="form-control"
-                        name="description"
-                        value={task.description}
-                        onChange={(e) => handleTaskChange(index, e)}
+                      <select
+                        className="form-select"
+                        name="category"
                         required
-                        placeholder="Task Description"
-                        rows="3"
-                        style={{ resize: "vertical" }}
-                      />
+                        value={task.category}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      >
+                        <option value="">--</option>
+                        {categories.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
+                      <select
+                        className="form-select"
+                        name="priority"
+                        value={task.priority}
+                        required
+                        onChange={(e) => handleTaskChange(index, e)}
+                      >
+                        <option value="">--</option>
+                        {priorities.map((priority) => (
+                          <option key={priority} value={priority}>
+                            {priority}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        name="complexity"
+                        value={task.complexity}
+                        required
+                        onChange={(e) => handleTaskChange(index, e)}
+                      >
+                        <option value="">--</option>
+                        {complexities.map((complexity) => (
+                          <option key={complexity} value={complexity}>
+                            {complexity}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td style={{ minWidth: 100 }}>
                       <button
                         type="button"
                         onClick={() => removeTaskRow(index)}
@@ -490,13 +506,19 @@ const DeveloperBoard = () => {
                     </td>
                   </tr>
                 ))}
-                <tr>
-                  <td colSpan="13">
-                    <button type="submit">Submit All Tasks</button>
-                  </td>
+                <tr
+                  style={{
+                    backgroundColor: "white",
+                    borderTop: "2px solid black",
+                  }}
+                >
+                  <td colSpan={15}></td>
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div className="text-center mt-3">
+            <button type="submit">Submit All Tasks</button>
           </div>
         </form>
       </PublicLayout>

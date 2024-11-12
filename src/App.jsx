@@ -51,10 +51,26 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
-            {/* <Route path="/log" element={<Log />} /> */}
-            <Route path="/admindashboard" element={<DeveloperBoard />} />
-            <Route path="/developerdashboard" element={<TaskDashboard />} />
-            <Route path="/addtask" element={<EmployeeTaskBoard />} />
+            <Route
+              path="/protected"
+              element={<ProtectedRoute element={<Protected />} />}
+            />
+            <Route
+              path="/admindashboard"
+              element={<ProtectedRoute element={<DeveloperBoard />} />}
+            />
+            <Route
+              path="/developerdashboard"
+              element={<ProtectedRoute element={<DevDashboard />} />}
+            />
+            <Route
+              path="/report"
+              element={<ProtectedRoute element={<TaskDashboard />} />}
+            />
+            <Route
+              path="/addtask"
+              element={<ProtectedRoute element={<EmployeeTaskBoard />} />}
+            />
 
             <Route
               path="/protected"

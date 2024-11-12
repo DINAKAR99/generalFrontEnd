@@ -45,6 +45,7 @@ const Signup = () => {
           return true;
         }
       }),
+    empid: yup.string().required("Employee id Required"),
     password: yup
       .string()
       .required("Password Required")
@@ -272,6 +273,22 @@ const Signup = () => {
                 />
                 {errors.user && (
                   <p className="text-danger">{errors.user.message}</p>
+                )}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empid" className="form-label">
+                  Employee id
+                </label>
+                <input
+                  type="number"
+                  className={`form-control ${
+                    errors.empid ? "is-invalid" : "is-valid"
+                  }`}
+                  id="empid"
+                  {...register("empid")}
+                />
+                {errors.user && (
+                  <p className="text-danger">{errors.empid.message}</p>
                 )}
               </div>
               <div className="mb-3">

@@ -24,12 +24,33 @@ const TaskDashboard = () => {
   };
 
   const exportToExcel = () => {
+    // Create a table element from the DOM table
     const table = document.getElementById("myTable");
+
+    // Convert the table into a worksheet
     const worksheet = XLSX.utils.table_to_sheet(table);
+
+    // Apply bold styling to the header row (first row)
+    const headerRow = worksheet["!rows"] || []; // Access existing row styles (if any)
+
+    // Style the first row (header row) to be bold
+    for (let col = 0; col < 17; col++) {
+      // Assuming there are 17 columns
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col }); // Get the cell reference for the header
+      if (!worksheet[cellRef]) {
+        worksheet[cellRef] = {}; // If the header cell is not defined, create it
+      }
+      worksheet[cellRef].s = { font: { bold: true } }; // Set the font style to bold
+    }
+
+    // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, "table.xlsx");
+
+    // Export the Excel file
+    XLSX.writeFile(workbook, "Worklog_report.xlsx");
   };
+
   return (
     <PublicLayout>
       <Button variant="contained" className="ms-2" onClick={exportToExcel}>
@@ -45,9 +66,6 @@ const TaskDashboard = () => {
           <thead>
             <tr>
               <th style={{ border: "1px solid black", padding: "8px" }}>
-                Task ID
-              </th>
-              <th style={{ border: "1px solid black", padding: "8px" }}>
                 Project Code
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
@@ -57,16 +75,10 @@ const TaskDashboard = () => {
                 Member ID
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
-                From Date
+                Task ID
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
-                To Date
-              </th>
-              <th style={{ border: "1px solid black", padding: "8px" }}>
-                Actual From Date
-              </th>
-              <th style={{ border: "1px solid black", padding: "8px" }}>
-                Actual To Date
+                Description
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Subtask ID
@@ -75,13 +87,29 @@ const TaskDashboard = () => {
                 Subtask Description
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
-                Description
+                Task Assigned Date
               </th>
+              <th style={{ border: "1px solid black", padding: "8px" }}>
+                Planned Start Date
+              </th>
+              <th style={{ border: "1px solid black", padding: "8px" }}>
+                Planned End Date
+              </th>
+              <th style={{ border: "1px solid black", padding: "8px" }}>
+                Actual Start Date
+              </th>
+              <th style={{ border: "1px solid black", padding: "8px" }}>
+                Actual End Date
+              </th>
+
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Planned Hours
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Actual Hours
+              </th>
+              <th style={{ border: "1px solid black", padding: "8px" }}>
+                Status
               </th>
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Category
@@ -92,18 +120,12 @@ const TaskDashboard = () => {
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Complexity
               </th>
-              <th style={{ border: "1px solid black", padding: "8px" }}>
-                Status
-              </th>
             </tr>
           </thead>
           <tbody>
             {tasks.length > 0 ? (
               tasks.map((task, index) => (
                 <tr key={`${task.taskId}-${index}`}>
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.taskId}
-                  </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.projectCode}
                   </td>
@@ -112,6 +134,21 @@ const TaskDashboard = () => {
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.memberId}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {`${task.projectCode}-${task.taskId}`}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {task.description}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {task.subtaskId}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {task.subtaskDesc}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {task.taskAssigned}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.fromDate}
@@ -126,19 +163,13 @@ const TaskDashboard = () => {
                     {task.actualtoDate}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.subtaskId}
-                  </td>
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.subtaskDesc}
-                  </td>
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.description}
-                  </td>
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.plannedHours}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.actualHours}
+                  </td>
+                  <td style={{ border: "1px solid black", padding: "8px" }}>
+                    {task.status}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.category}
@@ -148,9 +179,6 @@ const TaskDashboard = () => {
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.complexity}
-                  </td>
-                  <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.status}
                   </td>
                 </tr>
               ))
