@@ -51,14 +51,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/about" element={<About />} />
             {/* <Route path="/log" element={<Log />} /> */}
-            <Route
-              path="/admindashboard"
-              element={<ProtectedRoute element={<DeveloperBoard />} />}
-            />
-            <Route
-              path="/developerdashboard"
-              element={<ProtectedRoute element={<DevDashboard />} />}
-            />
+            <Route path="/admindashboard" element={<DeveloperBoard />} />
+            <Route path="/developerdashboard" element={<DevDashboard />} />
             <Route path="/addtask" element={<EmployeeTaskBoard />} />
 
             <Route
