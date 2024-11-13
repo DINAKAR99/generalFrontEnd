@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import PublicLayout from "../../../Layouts/PublicLayout";
 import { publicAxios } from "../../../service/Interceptor";
+import toast from "react-hot-toast";
+import { Button } from "@mui/material";
 
 const DeveloperBoard = () => {
   const [teamId, setTeamId] = useState("");
@@ -121,6 +123,12 @@ const DeveloperBoard = () => {
   };
 
   const addTaskRow = () => {
+    if (!teamId || !projectCode || !moduleId || !memberId) {
+      toast.error(
+        "Please select team, project, module, and member before adding a task."
+      );
+      return;
+    }
     console.log(tasks);
 
     setTaskCount((prevCount) => {
@@ -130,7 +138,7 @@ const DeveloperBoard = () => {
       setTasks((prevTasks) => [
         ...prevTasks,
         {
-          taskId: `T${newCount}`, // Generate taskId with the new count
+          taskId: `${newCount}`, // Generate taskId with the new count
           fromDate: "",
           toDate: "",
           subtaskId: "",
@@ -155,37 +163,55 @@ const DeveloperBoard = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const finalTasks = tasks.map((task) => ({
-      projectCode,
-      moduleId,
-      memberId,
-      ...task,
-    }));
+    if (!teamId || !projectCode || !moduleId || !memberId) {
+      toast.error(
+        "Please select team, project, module, and member before submitting tasks."
+      );
+      return;
+    }
+    // Show confirmation dialog
+    const isConfirmed = window.confirm(
+      "Are you sure you want to submit the tasks?"
+    );
+    if (isConfirmed) {
+      toast.loading("Submitting ...");
 
-    publicAxios
-      .post(
-        "public/api/tasks",
-        {
-          tasks: finalTasks,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then((response) => {
-        console.log("Success:", response.data);
-        // Reset form state after submission
-        setProjectCode("");
-        setModuleId(""); // Reset module selection after submission
-        setMemberId("");
-        setTasks([]);
-        setTaskCount(0); // Reset task count after submission
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+      const finalTasks = tasks.map((task) => ({
+        projectCode,
+        moduleId,
+        memberId,
+        ...task,
+      }));
+      setTimeout(() => {
+        publicAxios
+          .post(
+            "public/api/tasks",
+            {
+              tasks: finalTasks,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          .then((response) => {
+            console.log("Success:", response.data);
+            // Reset form state after submission
+            toast.remove();
+            toast.success("Successfully submitted tasks!"); // Show success message
+
+            setProjectCode("");
+            setModuleId(""); // Reset module selection after submission
+            setMemberId("");
+            setTasks([]);
+            setTaskCount(0); // Reset task count after submission
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }, 1000);
+    }
   };
 
   const handleTeamChange = (e) => {
@@ -200,6 +226,21 @@ const DeveloperBoard = () => {
     const selectedProjectCode = e.target.value;
     setProjectCode(selectedProjectCode);
     setModuleId(""); // Reset module on project change
+    setTasks(() => [
+      {
+        taskId: `${taskCount + 1}`, // Initialize with the correct task ID
+        fromDate: "",
+        toDate: "",
+        subtaskId: "",
+        subtaskDesc: "",
+        description: "",
+        plannedHours: "",
+        category: "",
+        priority: "",
+        complexity: "",
+        status: "",
+      },
+    ]);
   };
 
   return (
@@ -274,7 +315,7 @@ const DeveloperBoard = () => {
 
         <form onSubmit={handleSubmit}>
           <div style={{ overflowX: "scroll" }}>
-            <table style={{ width: "130%" }}>
+            <table style={{ width: "130%" }} className="table-bordered ">
               <thead>
                 <tr>
                   <th>Project Code</th>
@@ -356,8 +397,9 @@ const DeveloperBoard = () => {
                         onChange={(e) => handleTaskChange(index, e)}
                         required
                         placeholder="Task Description"
-                        rows="3"
-                        style={{ resize: "vertical" }}
+                        rows="2"
+                        cols="50"
+                        style={{ resize: "both", overflow: "auto" }}
                       />
                     </td>
                     <td>
@@ -377,10 +419,13 @@ const DeveloperBoard = () => {
                     </td>
                     <td>
                       {task.subtaskId && task.subtaskId !== "0" ? (
-                        <input
+                        <textarea
                           type="text"
                           className="form-control"
                           required
+                          rows="2"
+                          cols="50"
+                          style={{ resize: "both", overflow: "auto" }}
                           name="subtaskDesc"
                           value={task.subtaskDesc}
                           onChange={(e) => handleTaskChange(index, e)}
@@ -420,7 +465,7 @@ const DeveloperBoard = () => {
                     </td>
                     <td>
                       <input
-                        type="text"
+                        type="number"
                         className="form-control"
                         name="plannedHours"
                         value={task.plannedHours}
@@ -518,7 +563,15 @@ const DeveloperBoard = () => {
             </table>
           </div>
           <div className="text-center mt-3">
-            <button type="submit">Submit All Tasks</button>
+            <Button
+              variant="contained"
+              className="ms-2"
+              style={{ marginLeft: "20px" }}
+              type="submit"
+              // disabled={!teamId || !projectCode || !moduleId || !memberId}
+            >
+              Submit All Tasks
+            </Button>
           </div>
         </form>
       </PublicLayout>

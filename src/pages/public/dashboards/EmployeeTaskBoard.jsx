@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PublicLayout from "../../../Layouts/PublicLayout";
 import { publicAxios } from "../../../service/Interceptor";
+import toast from "react-hot-toast";
 
 const EmployeeTaskBoard = () => {
   const [teamId, setTeamId] = useState("");
@@ -11,11 +12,10 @@ const EmployeeTaskBoard = () => {
   const [memberId, setMemberId] = useState("");
 
   useEffect(() => {
-    const empid = sessionStorage.getItem("userid");
-    if (empid == 50000) {
-      setMemberId(2397);
-    }
-  });
+    const empid = sessionStorage.getItem("empid");
+    setMemberId(empid);
+  }, []);
+
   // Data arrays updated to group projects and modules by team
   const teams = [
     { id: "EODB", name: "Team EODB" },
@@ -47,8 +47,6 @@ const EmployeeTaskBoard = () => {
       { id: "M2", name: "Module D2" },
     ],
   };
-
-  const subtaskOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const categories = ["CR", "MR", "TM", "PI"];
   const priorities = ["Low", "Medium", "High"];
@@ -117,8 +115,15 @@ const EmployeeTaskBoard = () => {
     newTasks[index][name] = value;
     setTasks(newTasks);
   };
+  const subtaskOptions = Array.from({ length: 10 }, (_, i) => i + 1);
 
   const addTaskRow = () => {
+    if (!teamId || !projectCode || !moduleId || !memberId) {
+      toast.error(
+        "Please select team, project, module, and member before adding a task."
+      );
+      return;
+    }
     console.log(tasks);
 
     setTaskCount((prevCount) => {
@@ -156,36 +161,57 @@ const EmployeeTaskBoard = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const finalTasks = tasks.map((task) => ({
-      projectCode,
-      moduleId,
-      memberId,
-      ...task,
-    }));
+    if (!teamId || !projectCode || !moduleId || !memberId) {
+      toast.error(
+        "Please select team, project, module, and member before submitting tasks."
+      );
+      return;
+    }
+    // Show confirmation dialog
+    const isConfirmed = window.confirm(
+      "Are you sure you want to submit the tasks?"
+    );
 
-    publicAxios
-      .post(
-        "public/api/tasks",
-        {
-          tasks: finalTasks,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      )
-      .then((response) => {
-        console.log("Success:", response.data);
-        // Reset form state after submission
-        setProjectCode("");
-        setModuleId(""); // Reset module selection after submission
-        setTasks([]); // Clear tasks
-        setTaskCount(0); // Reset task count after submission
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    // If the user clicks "OK", proceed with form submission
+    if (isConfirmed) {
+      toast.loading("Submitting ...");
+      const finalTasks = tasks.map((task) => ({
+        projectCode,
+        moduleId,
+        memberId,
+        ...task,
+      }));
+      setTimeout(() => {
+        publicAxios
+          .post(
+            "public/api/tasks",
+            {
+              tasks: finalTasks,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          .then((response) => {
+            console.log("Success:", response.data);
+            toast.remove();
+            toast.success("Successfully submitted tasks!"); // Show success message
+            // Reset form state after submission
+            setProjectCode("");
+            setModuleId(""); // Reset module selection after submission
+            setTasks([]); // Clear tasks
+            setTaskCount(0); // Reset task count after submission
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }, 1000);
+    } else {
+      // If the user clicks "Cancel", log the cancellation (optional)
+      console.log("Task submission cancelled.");
+    }
   };
 
   const handleTeamChange = (e) => {
@@ -199,6 +225,24 @@ const EmployeeTaskBoard = () => {
     const selectedProjectCode = e.target.value;
     setProjectCode(selectedProjectCode);
     setModuleId(""); // Reset module on project change
+    setTasks(() => [
+      {
+        taskId: `${taskCount + 1}`, // Initialize with the correct task ID
+        fromDate: "",
+        toDate: "",
+        subtaskId: "",
+        subtaskDesc: "",
+        description: "",
+        plannedHours: "",
+        actualStartDate: "",
+        actualEndDate: "",
+        actualHours: "",
+        category: "",
+        priority: "",
+        complexity: "",
+        status: "",
+      },
+    ]);
   };
 
   return (
@@ -257,24 +301,27 @@ const EmployeeTaskBoard = () => {
 
         <form onSubmit={handleSubmit}>
           <div style={{ overflowX: "scroll" }}>
-            <table style={{ width: "130%" }}>
+            <table style={{ width: "130%" }} className="table-bordered  ">
               <thead>
                 <tr>
                   <th>Project Code</th>
                   <th>Module Code</th>
+                  <th>Assigned To</th>
                   <th>Task ID</th>
+                  <th>Description</th>
+                  <th>Subtask ID</th>
+                  <th>Subtask Description</th>
+                  <th>From Date</th>
+                  <th>To Date</th>
+                  <th>Actual From Date</th>
+                  <th>Actual To Date</th>
                   <th>Planned Hours</th>
+                  <th>Actual Hours</th>
+                  <th>Status</th>
                   <th>Category</th>
                   <th>Priority</th>
                   <th>Complexity</th>
-                  <th>From Date</th>
-                  <th>To Date</th>
-                  <th>Actual Start Date</th>
-                  <th>Actual End Date</th>
-                  <th>Actual Hours</th>
-                  <th>Status</th>
-                  <th>Description</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -283,6 +330,7 @@ const EmployeeTaskBoard = () => {
                     <td>
                       <input
                         type="text"
+                        className="form-control"
                         value={projectCode}
                         readOnly
                         style={{
@@ -295,7 +343,21 @@ const EmployeeTaskBoard = () => {
                     <td>
                       <input
                         type="text"
+                        className="form-control"
                         value={moduleId}
+                        readOnly
+                        style={{
+                          width: "100%",
+                          border: "none",
+                          backgroundColor: "#f0f0f0",
+                        }}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={memberId}
                         readOnly
                         style={{
                           width: "100%",
@@ -319,15 +381,139 @@ const EmployeeTaskBoard = () => {
                       />
                     </td>
                     <td>
-                      <input
-                        type="text"
+                      <textarea
                         className="form-control"
+                        name="description"
+                        value={task.description}
+                        onChange={(e) => handleTaskChange(index, e)}
+                        required
+                        placeholder="Task Description"
+                        rows="2"
+                        cols="50"
+                        style={{ resize: "both", overflow: "auto" }}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        name="subtaskId"
+                        required
+                        value={task.subtaskId}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      >
+                        <option value="0">--</option>
+                        {subtaskOptions.map((count) => (
+                          <option key={count} value={count}>
+                            {count}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      {task.subtaskId && task.subtaskId !== "0" ? (
+                        <textarea
+                          type="text"
+                          className="form-control"
+                          required
+                          rows="2"
+                          cols="50"
+                          style={{ resize: "both", overflow: "auto" }}
+                          name="subtaskDesc"
+                          value={task.subtaskDesc}
+                          onChange={(e) => handleTaskChange(index, e)}
+                          placeholder="Enter subtask description"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control"
+                          name="subtaskDesc"
+                          value="NA"
+                          onChange={(e) => handleTaskChange(index, e)}
+                          placeholder=" "
+                        />
+                      )}
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="date"
+                        name="fromDate"
+                        required
+                        value={task.fromDate}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="date"
+                        name="toDate"
+                        required
+                        value={task.toDate}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="date"
+                        name="actualStartDate"
+                        required
+                        value={task.actualStartDate}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="date"
+                        name="actualEndDate"
+                        required
+                        value={task.actualEndDate}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="number"
                         name="plannedHours"
+                        required
+                        style={{ minWidth: 90 }}
                         value={task.plannedHours}
                         onChange={(e) => handleTaskChange(index, e)}
-                        placeholder=""
-                        required
                       />
+                    </td>
+                    <td>
+                      <input
+                        className="form-control"
+                        type="number"
+                        style={{ minWidth: 90 }}
+                        name="actualHours"
+                        required
+                        max={7}
+                        value={task.actualHours}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      />
+                    </td>
+                    <td>
+                      <select
+                        className="form-select"
+                        name="status"
+                        required
+                        value={task.status}
+                        style={{ minWidth: 90 }}
+                        onChange={(e) => handleTaskChange(index, e)}
+                      >
+                        <option value="">--</option>
+                        {statuses.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
                       <select
@@ -349,8 +535,8 @@ const EmployeeTaskBoard = () => {
                       <select
                         className="form-select"
                         name="priority"
-                        value={task.priority}
                         required
+                        value={task.priority}
                         onChange={(e) => handleTaskChange(index, e)}
                       >
                         <option value="">--</option>
@@ -365,8 +551,8 @@ const EmployeeTaskBoard = () => {
                       <select
                         className="form-select"
                         name="complexity"
-                        value={task.complexity}
                         required
+                        value={task.complexity}
                         onChange={(e) => handleTaskChange(index, e)}
                       >
                         <option value="">--</option>
@@ -376,81 +562,6 @@ const EmployeeTaskBoard = () => {
                           </option>
                         ))}
                       </select>
-                    </td>
-                    <td>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="fromDate"
-                        value={task.fromDate}
-                        onChange={(e) => handleTaskChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="toDate"
-                        value={task.toDate}
-                        onChange={(e) => handleTaskChange(index, e)}
-                        required
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="actualStartDate"
-                        value={task.actualStartDate}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="form-control"
-                        type="date"
-                        name="actualEndDate"
-                        value={task.actualEndDate}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      />
-                    </td>
-                    <td>
-                      <input
-                        className="form-control"
-                        type="number"
-                        name="actualHours"
-                        value={task.actualHours}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      />
-                    </td>
-                    <td>
-                      <select
-                        className="form-select"
-                        name="status"
-                        required
-                        value={task.status}
-                        onChange={(e) => handleTaskChange(index, e)}
-                      >
-                        <option value="">--</option>
-                        {statuses.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td>
-                      <textarea
-                        className="form-control"
-                        name="description"
-                        value={task.description}
-                        onChange={(e) => handleTaskChange(index, e)}
-                        required
-                        placeholder="Task Description"
-                        rows="3"
-                        style={{ resize: "vertical" }}
-                      />
                     </td>
                     <td style={{ minWidth: 100 }}>
                       <button
@@ -465,15 +576,6 @@ const EmployeeTaskBoard = () => {
                     </td>
                   </tr>
                 ))}
-
-                <tr
-                  style={{
-                    backgroundColor: "white",
-                    borderTop: "2px solid black",
-                  }}
-                >
-                  <td colSpan={15}></td>
-                </tr>
               </tbody>
             </table>
           </div>

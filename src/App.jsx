@@ -22,6 +22,8 @@ import DeveloperBoard from "./pages/public/dashboards/DeveloperBoard";
 import DevDashboard from "./pages/public/dashboards/DevDashboard";
 import EmployeeTaskBoard from "./pages/public/dashboards/EmployeeTaskBoard";
 import TaskDashboard from "./pages/public/dashboards/TaskDashboard";
+import CompleteReport from "./pages/public/dashboards/CompleteReport";
+import TaskEditor from "./pages/public/dashboards/TaskEditor.jsx";
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -56,20 +58,24 @@ function App() {
               element={<ProtectedRoute element={<Protected />} />}
             />
             <Route
-              path="/admindashboard"
+              path="/taskByAdmin"
               element={<ProtectedRoute element={<DeveloperBoard />} />}
             />
             <Route
-              path="/developerdashboard"
+              path="/assignedTasks"
               element={<ProtectedRoute element={<DevDashboard />} />}
             />
             <Route
               path="/report"
-              element={<ProtectedRoute element={<TaskDashboard />} />}
+              element={<ProtectedRoute element={<CompleteReport />} />}
             />
             <Route
-              path="/addtask"
+              path="/taskByUser"
               element={<ProtectedRoute element={<EmployeeTaskBoard />} />}
+            />
+            <Route
+              path="/editTaskByUser"
+              element={<ProtectedRoute element={<TaskEditor />} />}
             />
 
             <Route

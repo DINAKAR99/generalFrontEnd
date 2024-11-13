@@ -190,7 +190,7 @@ const Login = () => {
         console.log(response.data.role);
 
         if (response.data.role === 1) {
-          navigate("/developerdashboard");
+          navigate("/assignedTasks");
         }
         // navigate("/protected"); // Handle successful login, e.g., redirect or store token
       }

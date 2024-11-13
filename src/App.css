@@ -1,6 +1,5 @@
- 
-@import url('https://fonts.googleapis.com/css2?family=Yantramanav:wght@100;300;400;500;700;900&display=swap');
- body {
+@import url("https://fonts.googleapis.com/css2?family=Yantramanav:wght@100;300;400;500;700;900&display=swap");
+body {
   font-family: "Yantramanav", sans-serif;
   background-color: white;
 }
@@ -388,7 +387,7 @@ input[type="text"][readOnly] {
   background-color: #e9ecef; /* Gray background for readonly fields */
 }
 
- /* DeveloperBoard.css */
+/* DeveloperBoard.css */
 
 /* Existing styles... */
 
@@ -399,8 +398,11 @@ table {
   margin-top: 20px; /* Space above the table */
   border: 1px solid #0000001e; /* Border for table cells */
 }
-
-th, td {
+.table-bordered {
+  border: 4px solid black !important; /* Border for table cells */
+}
+th,
+td {
   border: 1px solid #010101; /* Border for table cells */
   padding: 10px; /* Padding for table cells */
   text-align: left; /* Align text to the left */
@@ -409,16 +411,14 @@ th, td {
 th {
   background-color: #f8f9fa; /* Light gray background for header */
   font-weight: bold; /* Bold text for headers */
+  background-color: beige;
 }
 
 tr:nth-child(even) {
   background-color: #ffffffe8; /* Zebra striping for even rows */
 }
 
- 
-
 /* Other existing styles... */
-
 
 button {
   padding: 8px 12px; /* Increased padding for buttons */
@@ -430,21 +430,12 @@ button {
   transition: background-color 0.3s ease;
 }
 
- 
- 
-
- 
-
 table td:last-child button {
   margin-left: 5px; /* Space between action buttons */
 }
 /* DeveloperBoard.css */
 
 /* Existing styles... */
-
- 
-
- 
 
 select {
   width: 150px; /* Set a fixed width for dropdowns */

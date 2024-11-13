@@ -71,7 +71,7 @@ const Navbarr = () => {
       >
         <div className="container-fluid">
           <Link className="navbar-brand" to="/">
-            MyApp
+            LogManager
           </Link>
           <button
             className="navbar-toggler"
@@ -105,7 +105,7 @@ const Navbarr = () => {
                     <Link
                       className="dropdown-item "
                       style={{ backgroundColor: "transparent" }}
-                      to="/developerdashboard"
+                      to="/assignedTasks"
                     >
                       Assigned Tasks
                     </Link>
@@ -114,7 +114,7 @@ const Navbarr = () => {
                     <Link
                       className="dropdown-item"
                       style={{ backgroundColor: "transparent" }}
-                      to="/admindashboard"
+                      to="/taskByAdmin"
                     >
                       Task Assigner
                     </Link>
@@ -123,7 +123,7 @@ const Navbarr = () => {
                     <Link
                       className="dropdown-item"
                       style={{ backgroundColor: "transparent" }}
-                      to="/addtask"
+                      to="/taskByUser"
                     >
                       Add Task
                     </Link>
@@ -134,7 +134,16 @@ const Navbarr = () => {
                       style={{ backgroundColor: "transparent" }}
                       to="/report"
                     >
-                      Complete Tasks port
+                      Complete Tasks report
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="dropdown-item"
+                      style={{ backgroundColor: "transparent" }}
+                      to="/editTaskByUser"
+                    >
+                      Edit Tasks
                     </Link>
                   </li>
                 </ul>
@@ -165,11 +174,11 @@ const Navbarr = () => {
                   </li>
                 </>
               )}
-              <li className="nav-item">
+              {/* <li className="nav-item">
                 <a className="nav-link" to="#" onClick={jwtTest}>
                   jwt tester
                 </a>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

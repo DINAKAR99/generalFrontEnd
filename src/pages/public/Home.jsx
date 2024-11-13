@@ -147,7 +147,7 @@ const Home = () => {
             </div>
           </div>
           <div className="text-center my-5">
-            <h2>Testimonials</h2>
+            <h2></h2>
             <p>What our clients say about us.</p>
             <div className="row">
               <div className="col-md-4">

@@ -18,6 +18,7 @@ export const doLogin = (response) => {
       JSON.stringify(response.data.jwttoken)
     );
     sessionStorage.setItem("username", response.data.username);
+    sessionStorage.setItem("empid", response.data.empid);
     sessionStorage.setItem("userid", response.data.userid);
     sessionStorage.setItem("role", response.data.role);
     sessionStorage.setItem(

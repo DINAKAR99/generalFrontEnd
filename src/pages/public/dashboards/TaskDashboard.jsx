@@ -1,70 +1,126 @@
 import React, { useEffect, useState } from "react";
 import { publicAxios } from "../../../service/Interceptor"; // Assuming you're using axios for the API call
 import PublicLayout from "../../../Layouts/PublicLayout";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import * as XLSX from "xlsx";
 import { Button } from "@mui/material";
-const TaskDashboard = () => {
+import * as XLSX from "xlsx";
+
+const TaskDashboard = ({ empId = null }) => {
   const [tasks, setTasks] = useState([]);
+  const today = new Date().toISOString().split("T")[0]; // Get today's date in yyyy-mm-dd format
+  const [fromDate, setFromDate] = useState(today); // Set default "fromDate" to today
+  const [toDate, setToDate] = useState(today); // Set default "toDate" to today
 
-  useEffect(() => {
-    // Fetch today's tasks on component mount
-    fetchTodayTasks();
-  }, []);
-
-  const fetchTodayTasks = async () => {
+  // Function to fetch tasks based on selected date range and optional empId
+  const fetchTasksByDateRange = async () => {
     try {
-      // Fetch the task data (we assume this API returns the new fields in the task objects)
-      const response = await publicAxios.post("/public/api/tasks/today", {});
+      let url = ""; // Define the URL based on whether empId is provided or not
+
+      // Use different URLs depending on whether empId is provided or not
+      if (empId) {
+        url = `/public/api/tasks/range/`; // Use empId-specific URL
+      } else {
+        url = `/public/api/tasks/range/all`; // Use default URL
+      }
+
+      // Prepare the request payload
+      const requestData = {
+        fromDate: fromDate,
+        toDate: toDate,
+      };
+
+      // If empId is provided, include it in the request body
+      if (empId) {
+        requestData.empid = empId;
+      }
+
+      // Make the API call with the constructed URL and requestData
+      const response = await publicAxios.post(url, requestData);
+
       setTasks(response.data); // Store tasks in state
     } catch (error) {
       console.error("Error fetching tasks:", error);
     }
   };
 
+  // Export table data to Excel
   const exportToExcel = () => {
-    // Create a table element from the DOM table
     const table = document.getElementById("myTable");
 
-    // Convert the table into a worksheet
     const worksheet = XLSX.utils.table_to_sheet(table);
 
-    // Apply bold styling to the header row (first row)
-    const headerRow = worksheet["!rows"] || []; // Access existing row styles (if any)
+    const headerRow = worksheet["!rows"] || [];
 
-    // Style the first row (header row) to be bold
     for (let col = 0; col < 17; col++) {
-      // Assuming there are 17 columns
-      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col }); // Get the cell reference for the header
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: col });
       if (!worksheet[cellRef]) {
-        worksheet[cellRef] = {}; // If the header cell is not defined, create it
+        worksheet[cellRef] = {};
       }
-      worksheet[cellRef].s = { font: { bold: true } }; // Set the font style to bold
+      worksheet[cellRef].s = { font: { bold: true } };
     }
 
-    // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
-    // Export the Excel file
     XLSX.writeFile(workbook, "Worklog_report.xlsx");
   };
 
+  useEffect(() => {
+    // Fetch tasks whenever the date range or empId changes
+    fetchTasksByDateRange();
+  }, [fromDate, toDate, empId]);
+
   return (
-    <PublicLayout>
-      <Button variant="contained" className="ms-2" onClick={exportToExcel}>
-        Export to Excel{" "}
-        <i class="fa-regular fa-file-excel ms-1 bg-success "></i>
-      </Button>
+    <>
+      <div style={{ marginBottom: "20px" }}>
+        {/* Date range selectors */}
+        <label>
+          From Date:
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+          />
+        </label>
+        <label style={{ marginLeft: "20px" }}>
+          To Date:
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+          />
+        </label>
+
+        {/* Button to fetch tasks by date range */}
+        <Button
+          variant="contained"
+          className="ms-2"
+          onClick={fetchTasksByDateRange}
+          style={{ marginLeft: "20px" }}
+        >
+          Fetch Tasks
+        </Button>
+
+        {/* Export to Excel button */}
+        <Button
+          variant="contained"
+          className="ms-2"
+          onClick={exportToExcel}
+          style={{ marginLeft: "20px" }}
+        >
+          Export to Excel{" "}
+          <i className="fa-regular fa-file-excel ms-1 bg-success"></i>
+        </Button>
+      </div>
+
       <div>
-        <h2>All Tasks</h2>
+        {empId ? <h2> Tasks For Today </h2> : <h2>All Tasks</h2>}
+
         <table
           style={{ borderCollapse: "collapse", width: "100%" }}
           id="myTable"
         >
           <thead>
             <tr>
+              {/* Table headers */}
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Project Code
               </th>
@@ -101,7 +157,6 @@ const TaskDashboard = () => {
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Actual End Date
               </th>
-
               <th style={{ border: "1px solid black", padding: "8px" }}>
                 Planned Hours
               </th>
@@ -136,13 +191,13 @@ const TaskDashboard = () => {
                     {task.memberId}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {`${task.projectCode}-${task.taskId}`}
+                    {`${task.projectCode}-T${task.taskId}`}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.description}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.subtaskId}
+                    {`${task.projectCode}-T${task.taskId}-S${task.subtaskId}`}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.subtaskDesc}
@@ -157,10 +212,10 @@ const TaskDashboard = () => {
                     {task.toDate}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.actualfromDate}
+                    {task.actualStartDate}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
-                    {task.actualtoDate}
+                    {task.actualEndDate}
                   </td>
                   <td style={{ border: "1px solid black", padding: "8px" }}>
                     {task.plannedHours}
@@ -188,14 +243,14 @@ const TaskDashboard = () => {
                   colSpan="17"
                   style={{ textAlign: "center", padding: "8px" }}
                 >
-                  No tasks for today.
+                  No tasks for the selected date range.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-    </PublicLayout>
+    </>
   );
 };
 
